@@ -1,0 +1,9 @@
+name: FamousGuilds
+version: 1.0
+description: ThumbsApply is a plugin that promotes you to a group via password.
+author: Todkommt
+website: http://www.famousserver.de
+
+main: com.famousserver.FamousGuilds.FamousGuilds
+
+platform: BOTH
