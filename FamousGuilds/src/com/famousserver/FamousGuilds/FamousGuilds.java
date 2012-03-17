@@ -1,8 +1,13 @@
 package com.famousserver.FamousGuilds;
 
 import java.io.File;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.famousserver.FamousGuilds.util.Config;
+import com.famousserver.FamousGuilds.util.FGMySQL;
+import com.famousserver.FamousGuilds.util.FamousGuild;
 
 import org.spout.api.plugin.CommonPlugin;
 
@@ -11,6 +16,9 @@ public class FamousGuilds extends CommonPlugin
 	public static FamousGuilds instance;
 	private Config config;
 	private File configFile = new File("plugins/FamousGuilds/config.yml");
+	public Map<Integer, String>te=new HashMap<Integer, String>();
+	public Map<Integer, String>mem=new HashMap<Integer, String>();
+	public Map<Integer, Integer>memg=new HashMap<Integer, Integer>();
 
 	public void onDisable() 
 	{
@@ -21,6 +29,12 @@ public class FamousGuilds extends CommonPlugin
 	{
 		instance = this;
 		config = new Config(configFile);
+		try {
+			FGMySQL.addGuild(new FamousGuild("name",te , mem, memg, "Sinnoh"));
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public Config getConfig()
@@ -36,5 +50,13 @@ public class FamousGuilds extends CommonPlugin
 	public void reloadConfig()
 	{
 		config.reload();
+	}
+	
+	public void addDefaults()
+	{
+		getConfig().addDefault("MySQL.USER", "user");
+		getConfig().addDefault("MySQL.PASSWORD", "pw");
+		getConfig().addDefault("MySQL.URL", "jdbc:mysql://localhost:3306/");
+		getConfig().copyDefaults();
 	}
 }
