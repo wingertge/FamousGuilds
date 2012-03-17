@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -17,12 +18,29 @@ public class FGMySQL
 	static String pw = plugin.getConfig().getString("MySQL.PASSWORD");
 	static String url = plugin.getConfig().getString("MySQL.URL");
 	static Connection con = null;
+	public static List<String> guilds = new ArrayList<String>();
 	
 	static
 	{
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		try {
+			con = DriverManager.getConnection(url + "mysql", user, pw);
+			Statement st = con.createStatement();
+			String query = "SHOW DATABASES";
+			ResultSet rs = st.executeQuery(query);
+			while(rs.next())
+			{
+				String name = rs.getString("Database");
+				if(name.startsWith("guild_"))
+				{
+					guilds.add(name.substring(6));
+				}
+			}
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
@@ -128,6 +146,7 @@ public class FGMySQL
 		addGroup(guild.name, "Leader");
 		addMember(guild.name, guild.leader);
 		assignGroup(guild.name, guild.leader, "Leader");
+		guilds.add(guild.name);
 	}
 	
 	public static void removeGuild(FamousGuild guild)

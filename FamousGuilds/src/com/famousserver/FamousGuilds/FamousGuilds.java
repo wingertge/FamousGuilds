@@ -1,14 +1,10 @@
 package com.famousserver.FamousGuilds;
 
 import java.io.File;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-
 import com.famousserver.FamousGuilds.util.Config;
 import com.famousserver.FamousGuilds.util.FGMySQL;
-import com.famousserver.FamousGuilds.util.FamousGuild;
-
 import org.spout.api.plugin.CommonPlugin;
 
 public class FamousGuilds extends CommonPlugin 
@@ -31,6 +27,11 @@ public class FamousGuilds extends CommonPlugin
 		config = new Config(configFile);
 		reloadConfig();
 		addDefaults();
+		log("Loaded Guilds:");
+		for(String guild : FGMySQL.guilds)
+		{
+			log(guild);
+		}
 	}
 
 	public Config getConfig()
@@ -46,6 +47,11 @@ public class FamousGuilds extends CommonPlugin
 	public void reloadConfig()
 	{
 		config.reload();
+	}
+	
+	public void log(String msg)
+	{
+		System.out.println(msg);
 	}
 	
 	public void addDefaults()
