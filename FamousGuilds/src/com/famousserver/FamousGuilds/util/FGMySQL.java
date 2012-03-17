@@ -2,6 +2,7 @@ package com.famousserver.FamousGuilds.util;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
@@ -99,8 +100,23 @@ public class FGMySQL
 		String table1 = "CREATE TABLE IF NOT EXISTS groups(ID MEDIUMINT NOT NULL AUTO_INCREMENT, name varchar(30), PRIMARY KEY (ID))";
 		String table2 = "CREATE TABLE IF NOT EXISTS members(ID MEDIUMINT NOT NULL AUTO_INCREMENT, name varchar(30), PRIMARY KEY (ID))";
 		String table3 = "CREATE TABLE IF NOT EXISTS membergroups(member INT Unsigned Not Null References members(ID), group Int Unsigned Not Null References groups(ID),  Primary Key (member, group))";
-		
-		
+		st.executeUpdate(table1);
+		st.executeUpdate(table2);
+		st.executeUpdate(table3);
+		String addgroup = "INSERT INTO groups VALUES(name='Leader')"; 
+		String addmem = "INSERT INTO members VALUES(name='" + guild.leader + "'"; 
+		st.executeUpdate(addmem);
+		st.executeUpdate(addgroup);
+		String s = "SELECT ID FROM members WHERE name LIKE '" + guild.leader + "'";
+		String ss = "SELECT ID FROM groups WHERE name LIKE 'Leader'";
+		ResultSet rs = st.executeQuery(s);
+		ResultSet rs2 = st.executeQuery(ss);
+		int groupID = rs.getInt(0);
+		int memberID = rs2.getInt(0);
+		String addtomeme = "INSERT INTO membergroups VALUES('" + memberID + "', '" + groupID + "')";
+		st.execute(addtomeme);
+		st.close();
+		con.close();
 		
 	}
 	

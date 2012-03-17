@@ -1,6 +1,7 @@
 package com.famousserver.FamousGuilds.util;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class FamousGuild {
 
@@ -10,12 +11,12 @@ public class FamousGuild {
 	public HashMap<Integer, Integer> membergroups;
 	public String leader;
 	
-	public FamousGuild(String name, HashMap<Integer, String> groups, HashMap<Integer, String> members, HashMap<Integer, Integer> membergroups, String leader)
+	public FamousGuild(String name, Map<Integer, String> groups, Map<Integer, String> members, Map<Integer, Integer> membergroups, String leader)
 	{
 		this.name = name;
-		this.groups = groups;
-		this.members = members;
-		this.membergroups = membergroups;
+		this.groups = (HashMap<Integer, String>) groups;
+		this.members = (HashMap<Integer, String>) members;
+		this.membergroups = (HashMap<Integer, Integer>) membergroups;
 		this.leader = leader;
 	}
 }
