@@ -3,6 +3,7 @@ package com.famousserver.FamousGuilds;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.famousserver.FamousGuilds.commands.GuildCommands;
 import com.famousserver.FamousGuilds.util.FGMySQL;
 import com.famousserver.FamousGuilds.util.FamousCommandHandler;
 
@@ -29,6 +30,7 @@ public class FamousGuilds extends JavaPlugin
 		commandHandler = new FamousCommandHandler();
 		reloadConfig();
 		addDefaults();
+		commandHandler.registerCommand(new GuildCommands());
 		log("Loaded Guilds:");
 		for(String guild : FGMySQL.guilds)
 		{
