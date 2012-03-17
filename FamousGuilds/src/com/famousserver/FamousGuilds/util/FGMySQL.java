@@ -1,5 +1,9 @@
 package com.famousserver.FamousGuilds.util;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
 
@@ -8,7 +12,14 @@ import com.famousserver.FamousGuilds.FamousGuilds;
 public class FGMySQL 
 {
 	private static FamousGuilds plugin = FamousGuilds.instance;
-
+	static String user = plugin.getConfig().getString("MySQL.USER");
+	static String pw = plugin.getConfig().getString("MySQL.PASSWORD");
+	static String url = plugin.getConfig().getString("MySQL.URL");
+	static String db = plugin.getConfig().getString("MySQL.DB");
+	static Connection con = null;
+	
+	
+	
 	public static FamousGuild getGuild(String name)
 	{
 		return null;
@@ -79,8 +90,17 @@ public class FGMySQL
 		
 	}
 	
-	public static void addGuild(FamousGuild guild)
+	public static void addGuild(FamousGuild guild) throws SQLException
 	{
+		con = DriverManager.getConnection(url+db, user, pw);
+		Statement st = con.createStatement();
+		String createdb = "CREATE DATABASE IF NOT EXISTS guild_" + guild.name; 
+		st.executeUpdate(createdb);
+		String table1 = "CREATE TABLE IF NOT EXISTS groups(ID MEDIUMINT NOT NULL AUTO_INCREMENT, name varchar(30), PRIMARY KEY (ID))";
+		String table2 = "CREATE TABLE IF NOT EXISTS members(ID MEDIUMINT NOT NULL AUTO_INCREMENT, name varchar(30), PRIMARY KEY (ID))";
+		String table3 = "CREATE TABLE IF NOT EXISTS membergroups(member INT Unsigned Not Null References members(ID), group Int Unsigned Not Null References groups(ID),  Primary Key (member, group))";
+		
+		
 		
 	}
 	
