@@ -20,20 +20,20 @@ public class AddGuildCommand extends FamousCommand {
 
 	public boolean exec(CommandSender sender, String[] args) {
 		Player player = (Player) sender;
-		if(args.length != 1)
+		if(args.length != 2)
 		{
 			return false;
 		}
 		
 		HashMap<Integer, String> hm = new HashMap<Integer, String>();
 		HashMap<Integer, Integer> hm2 = new HashMap<Integer, Integer>();
-		FamousGuild guild = new FamousGuild(args[0], hm, hm, hm2, player.getName());
+		FamousGuild guild = new FamousGuild(args[1], hm, hm, hm2, player.getName());
 		try {
 			FGMySQL.addGuild(guild);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		player.sendMessage(ChatColor.GREEN + "You successfully created the guild " + args[0] + ".");
+		player.sendMessage(ChatColor.GREEN + "You successfully created the guild " + args[1] + ".");
 		return true;
 	}
 	
