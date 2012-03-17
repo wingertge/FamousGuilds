@@ -3,8 +3,15 @@ package com.famousserver.FamousGuilds;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.famousserver.FamousGuilds.commands.AdminCommands;
+import com.famousserver.FamousGuilds.commands.GuildCommands;
 import com.famousserver.FamousGuilds.util.Config;
 import com.famousserver.FamousGuilds.util.FGMySQL;
+import org.spout.api.command.CommandRegistrationsFactory;
+import org.spout.api.command.annotated.AnnotatedCommandRegistrationFactory;
+import org.spout.api.command.annotated.SimpleAnnotatedCommandExecutorFactory;
+import org.spout.api.command.annotated.SimpleInjector;
 import org.spout.api.plugin.CommonPlugin;
 
 public class FamousGuilds extends CommonPlugin 
@@ -21,10 +28,19 @@ public class FamousGuilds extends CommonPlugin
 		
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void setupCommands()
+	{
+		CommandRegistrationsFactory commandRegFactory = new AnnotatedCommandRegistrationFactory(new SimpleInjector(new Object[] { this }), new SimpleAnnotatedCommandExecutorFactory());
+		getGame().getRootCommand().addSubCommands(this, GuildCommands.class, commandRegFactory);
+		getGame().getRootCommand().addSubCommands(this, AdminCommands.class, commandRegFactory);
+	}
+	
 	public void onEnable()
 	{
 		instance = this;
 		config = new Config(configFile);
+		setupCommands();
 		reloadConfig();
 		addDefaults();
 		log("Loaded Guilds:");
