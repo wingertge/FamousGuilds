@@ -31,13 +31,13 @@ public List<FamousCommand> commands = new ArrayList<FamousCommand>();
 					if(!command.isConsoleCommand)
 					{
 						sender.sendMessage(ChatColor.RED + "This is not a console command!");
-						return false;
+						return true;
 					}
 					
 					if(!sender.hasPermission(command.permission))
 					{
 						sender.sendMessage(ChatColor.RED + "You don't have permission to do that!");
-						return false;
+						return true;
 					}
 					
 					return command.exec(sender, args);
