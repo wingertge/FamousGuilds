@@ -27,6 +27,7 @@ public class Config extends Configuration {
 	
 	public void addDefault(String path, Object value)
 	{
+		load();
 		ConfigurationNode node = new ConfigurationNode(path, value);
 		if(!nodes1.contains(node) && !this.nodes.contains(node))
 		{
@@ -36,7 +37,6 @@ public class Config extends Configuration {
 	
 	public void reload()
 	{
-		this.save();
 		this.load();
 	}
 	

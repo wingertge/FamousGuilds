@@ -29,12 +29,8 @@ public class FamousGuilds extends CommonPlugin
 	{
 		instance = this;
 		config = new Config(configFile);
-		try {
-			FGMySQL.addGuild(new FamousGuild("name",te , mem, memg, "Sinnoh"));
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		reloadConfig();
+		addDefaults();
 	}
 
 	public Config getConfig()
@@ -58,5 +54,6 @@ public class FamousGuilds extends CommonPlugin
 		getConfig().addDefault("MySQL.PASSWORD", "pw");
 		getConfig().addDefault("MySQL.URL", "jdbc:mysql://localhost:3306/");
 		getConfig().copyDefaults();
+		saveConfig();
 	}
 }
