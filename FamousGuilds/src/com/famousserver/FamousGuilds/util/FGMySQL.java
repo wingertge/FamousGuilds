@@ -45,54 +45,137 @@ public class FGMySQL
 		}
 	}
 	
-	public static FamousGuild getGuild(String name)
+	public static FamousGuild getGuild(String name) throws SQLException
 	{
-		return null;
+		FamousGuild guild;
+		String leader;
+		HashMap<Integer, String> groups = new HashMap<Integer, String>();
+		HashMap<Integer, String> members = new HashMap<Integer, String>();
+		HashMap<Integer, Integer> membergroups = new HashMap<Integer, Integer>();
+		con = DriverManager.getConnection(url + "guild_" + name, user, pw);
+		Statement st = con.createStatement();
+		String querygroups = "SELECT ID, name FROM groups";
+		ResultSet rs = st.executeQuery(querygroups);
+		while(rs.next())
+		{
+			groups.put(rs.getInt("ID"), rs.getString("name"));
+		}
+		String querymembers = "SELECT ID, name FROM members";
+		rs = st.executeQuery(querymembers);
+		while(rs.next())
+		{
+			members.put(rs.getInt("ID"), rs.getString("name"));
+		}
+		String querymembergroups = "SELECT memberID, groupID FROM membergroups";
+		rs = st.executeQuery(querymembergroups);
+		while(rs.next())
+		{
+			membergroups.put(rs.getInt("memberID"), rs.getInt("groupID"));
+		}
+		int groupID = getGroupID(name, "Leader");
+		String query = "SELECT memberID FROM membergroups WHERE groupID LIKE '" + groupID + "'";
+		rs = st.executeQuery(query);
+		rs.next();
+		int memberID = rs.getInt("memberID");
+		st.close();
+		con.close();
+		leader = getMemberName(name, memberID);
+		guild = new FamousGuild(name, groups, members, membergroups, leader);
+		return guild;
 	}
 	
-	public static List<FamousGuild> getGuilds()
+	public static List<FamousGuild> getGuilds() throws SQLException
 	{
-		return null;
+		List<FamousGuild> guilds1 = new ArrayList<FamousGuild>();
+		for(String guild : guilds)
+		{
+			guilds1.add(getGuild(guild));
+		}
+		return guilds1;
 	}
 	
-	public static void saveGuild(FamousGuild guild)
+	public static HashMap<Integer, String> getGroups(String guild) throws SQLException
 	{
-		
+		HashMap<Integer, String> groups = new HashMap<Integer, String>();
+		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
+		Statement st = con.createStatement();
+		String query = "SELECT ID, name FROM groups";
+		ResultSet rs = st.executeQuery(query);
+		while(rs.next())
+		{
+			groups.put(rs.getInt("ID"), rs.getString("name"));
+		}
+		st.close();
+		con.close();
+		return groups;
 	}
 	
-	public static void saveGuilds(List<FamousGuild> guilds)
+	public static HashMap<Integer, String> getMembers(String guild) throws SQLException
 	{
-		
+		HashMap<Integer, String> members = new HashMap<Integer, String>();
+		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
+		Statement st = con.createStatement();
+		String query = "SELECT ID, name FROM members";
+		ResultSet rs = st.executeQuery(query);
+		while(rs.next())
+		{
+			members.put(rs.getInt("ID"), rs.getString("name"));
+		}
+		st.close();
+		con.close();
+		return members;
 	}
 	
-	public static HashMap<Integer, String> getGroups(String guild)
+	public static int getMemberID(String guild, String member) throws SQLException
 	{
-		return null;
+		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
+		Statement st = con.createStatement();
+		String query = "SELECT ID FROM members WHERE name LIKE '" + member + "'";
+		ResultSet rs = st.executeQuery(query);
+		rs.next();
+		int id = rs.getInt("ID");
+		st.close();
+		con.close();
+		return id;
 	}
 	
-	public static HashMap<Integer, String> getMembers(String guild)
+	public static int getGroupID(String guild, String group) throws SQLException
 	{
-		return null;
+		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
+		Statement st = con.createStatement();
+		String query = "SELECT ID FROM groups WHERE name LIKE '" + group + "'";
+		ResultSet rs = st.executeQuery(query);
+		rs.next();
+		int id = rs.getInt("ID");
+		st.close();
+		con.close();
+		return id;
 	}
 	
-	public static int getMemberID(String guild, String member)
+	public static String getGroupName(String guild, int ID) throws SQLException
 	{
-		return 0;
+		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
+		Statement st = con.createStatement();
+		String query = "SELECT name FROM groups WHERE ID LIKE '" + ID + "'";
+		ResultSet rs = st.executeQuery(query);
+		rs.next();
+		String result = rs.getString(1);
+		st.close();
+		con.close();
+		return result;
 	}
 	
-	public static int getGroupID(String guild, String group)
+	public static String getMemberName(String guild, int ID) throws SQLException
 	{
-		return 0;
-	}
-	
-	public static String getGroupName(String guild, int ID)
-	{
-		return "";
-	}
-	
-	public static String getMemberName(String guild, int ID)
-	{
-		return "";
+		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
+		Statement st = con.createStatement();
+		String query = "SELECT name FROM members WHERE ID LIKE '" + ID + "'";
+		ResultSet rs = st.executeQuery(query);
+		rs.next();
+		String result = rs.getString(1);
+		st.close();
+		con.close();
+		return result;
 	}
 	
 	public static void addMember(String guild, String member) throws SQLException
@@ -105,24 +188,34 @@ public class FGMySQL
 		con.close();
 	}
 	
-	public static void removeMember(String guild, String member)
+	public static void removeMember(String guild, String member) throws SQLException
 	{
-		
+		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
+		Statement st = con.createStatement();
+		String addmem = "DELETE FROM members WHERE name LIKE '" + member + "'"; 
+		st.executeUpdate(addmem);
+		st.close();
+		con.close();
 	}
 	
 	public static void addGroup(String guild, String group) throws SQLException
 	{
 		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
 		Statement st = con.createStatement();
-		String addgroup = "INSERT INTO groups (name) VALUE ('Leader')";
-		st.executeUpdate(addgroup);
+		String removegroup = "INSERT INTO groups (name) VALUE ('Leader')";
+		st.executeUpdate(removegroup);
 		st.close();
 		con.close();
 	}
 	
-	public static void removeGroup(String guild, String group)
+	public static void removeGroup(String guild, String group) throws SQLException
 	{
-		
+		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
+		Statement st = con.createStatement();
+		String removemember = "DELETE FROM groups WHERE name LIKE '" + group + "'";
+		st.executeUpdate(removemember);
+		st.close();
+		con.close();
 	}
 	
 	public static void addGuild(FamousGuild guild) throws SQLException
@@ -149,9 +242,14 @@ public class FGMySQL
 		guilds.add(guild.name);
 	}
 	
-	public static void removeGuild(FamousGuild guild)
+	public static void removeGuild(String guild) throws SQLException
 	{
-		
+		con = DriverManager.getConnection(url + "mysql", user, pw);
+		Statement st = con.createStatement();
+		String update = "DROP DATABASE IF EXISTS " + guild;
+		st.executeUpdate(update);
+		st.close();
+		con.close();
 	}
 	
 	public static void assignGroup(String guild, String member, String group) throws SQLException
@@ -207,17 +305,35 @@ public class FGMySQL
 		assignGroup(guild, memberID, groupID);
 	}
 	
+	public static void setLeader(String guild, String member) throws SQLException
+	{
+		int groupID = getGroupID(guild, "Leader");
+		int memberID = getMemberID(guild, member);
+		String update = "UPDATE membergroups SET memberID='" + memberID + "' WHERE groupID LIKE '" + groupID + "'";
+		//TODO: assign new group to old leader
+		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
+		Statement st = con.createStatement();
+		st.executeUpdate(update);
+		st.close();
+		con.close();
+	}
+	
+	public static String getLeader(String guild) throws SQLException
+	{
+		int groupID = getGroupID(guild, "Leader");
+		String query = "SELECT memberID FROM membergroups WHERE groupID LIKE '" + groupID + "'";
+		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
+		Statement st = con.createStatement();
+		ResultSet rs = st.executeQuery(query);
+		rs.next();
+		int memberID = rs.getInt("memberID");
+		st.close();
+		con.close();
+		String ret = getMemberName(guild, memberID);
+		return ret;
+	}
+	
 	//TODO: figure something out
-	public static void setLeader(String guild, String member)
-	{
-		
-	}
-	
-	public static String getLeader(String guild)
-	{
-		return "";
-	}
-	
 	public static void setGuildLogo(String guild, String url)
 	{
 		
