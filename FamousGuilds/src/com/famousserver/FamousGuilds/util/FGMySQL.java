@@ -45,6 +45,27 @@ public class FGMySQL
 		}
 	}
 	
+	public static String getMemberGroup(String guild, String member) throws SQLException
+	{
+		int memberID = getMemberID(guild, member);
+		return getMemberGroup(guild, memberID);
+	}
+	
+	public static String getMemberGroup(String guild, int memberID) throws SQLException
+	{
+		String res = "";
+		String query = "SELECT groupID FROM membergroups WHERE memberID LIKE '" + memberID + "'";
+		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
+		Statement st = con.createStatement();
+		ResultSet rs = st.executeQuery(query);
+		rs.next();
+		int groupID = rs.getInt("groupID");
+		st.close();
+		con.close();
+		res = getGroupName(guild, groupID);
+		return res;
+	}
+	
 	public static FamousGuild getGuild(String name) throws SQLException
 	{
 		FamousGuild guild;
@@ -145,8 +166,12 @@ public class FGMySQL
 		Statement st = con.createStatement();
 		String query = "SELECT ID FROM groups WHERE name LIKE '" + group + "'";
 		ResultSet rs = st.executeQuery(query);
-		rs.next();
-		int id = rs.getInt("ID");
+		int id;
+		if(rs.next())
+		{
+			id = rs.getInt("ID");
+		}
+		else return 0;
 		st.close();
 		con.close();
 		return id;
@@ -178,7 +203,7 @@ public class FGMySQL
 		return result;
 	}
 	
-	public static void addMember(String guild, String member) throws SQLException
+	private static void addMember(String guild, String member) throws SQLException
 	{
 		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
 		Statement st = con.createStatement();
@@ -186,6 +211,12 @@ public class FGMySQL
 		st.executeUpdate(addmem);
 		st.close();
 		con.close();
+	}
+	
+	public static void joinGuild(String guild, String member) throws SQLException
+	{
+		addMember(guild, member);
+		assignGroup(guild, member, "Member");
 	}
 	
 	public static void removeMember(String guild, String member) throws SQLException
@@ -202,11 +233,11 @@ public class FGMySQL
 	{
 		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
 		Statement st = con.createStatement();
-		String addgroup = "INSERT INTO groups (name) VALUE ('Leader')";
+		String addgroup = "INSERT INTO groups (name) VALUE ('" + group + "')";
 		st.executeUpdate(addgroup);
 		st.close();
 		con.close();
-		addProperties(guild, addgroup, false);
+		addProperties(guild, group, false);
 	}
 	
 	public static void removeGroup(String guild, String group) throws SQLException
@@ -223,7 +254,7 @@ public class FGMySQL
 	
 	public static void setOption(String guild, String key, String value) throws SQLException
 	{
-		String query = "UPDATE options SET value='" + value + "' WHERE key LIKE '" + key + "'";
+		String query = "UPDATE options SET optvalue='" + value + "' WHERE optkey LIKE '" + key + "'";
 		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
 		Statement st = con.createStatement();
 		st.executeUpdate(query);
@@ -234,13 +265,13 @@ public class FGMySQL
 	public static String getOption(String guild, String key) throws SQLException
 	{
 		String res = "";
-		String query = "SELECT value FROM options WHERE key LIKE '" + key + "'";
+		String query = "SELECT optvalue FROM options WHERE optkey LIKE '" + key + "'";
 		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
 		Statement st = con.createStatement();
 		ResultSet rs = st.executeQuery(query);
 		if(rs.next())
 		{
-			res = rs.getString("value");
+			res = rs.getString("optvalue");
 		}
 		st.close();
 		con.close();
@@ -260,9 +291,13 @@ public class FGMySQL
 		String table1 = "CREATE TABLE IF NOT EXISTS groups(ID MEDIUMINT NOT NULL AUTO_INCREMENT, name varchar(30), PRIMARY KEY (ID))";
 		String table2 = "CREATE TABLE IF NOT EXISTS members(ID MEDIUMINT NOT NULL AUTO_INCREMENT, name varchar(30), PRIMARY KEY (ID))";
 		String table3 = "CREATE TABLE IF NOT EXISTS membergroups(memberID INT Unsigned Not Null References members(ID), groupID Int Unsigned Not Null References groups(ID),Primary Key (memberID, groupID))";
+		String table4 = "CREATE TABLE IF NOT EXISTS options(optkey varchar(30), optvalue varchar(100))";
 		st.executeUpdate(table1);
 		st.executeUpdate(table2);
 		st.executeUpdate(table3);
+		st.executeUpdate(table4);
+		String option1 = "INSERT INTO options VALUES('bannerurl', 'http://famousserver.de/resources/banner_default.png')";
+		st.executeUpdate(option1);
 		st.close();
 		con.close();
 		addGroup(guild.name, "Leader");
@@ -274,8 +309,13 @@ public class FGMySQL
 		guilds.add(guild.name);
 	}
 	
-	private static void addProperties(String guild, String group, boolean def) throws SQLException
+	private static void addProperties(String guild, String group, boolean defa) throws SQLException
 	{
+		int def = 0;
+		if(defa)
+		{
+			def = 1;
+		}
 		List<String> props = new ArrayList<String>();
 		props.add("kick");
 		props.add("invite");
@@ -285,8 +325,12 @@ public class FGMySQL
 		props.add("accessguildbank");
 		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
 		Statement st = con.createStatement();
-		String query = "CREATE TABLE IF NOT EXISTS group_" + group + "(ID MEDIUMINT NOT NULL AUTO_INCREMENT, key varchar(30) NOT NULL, value BOOLEAN NOT NULL)";
+		String query = "CREATE TABLE IF NOT EXISTS group_" + group + "(propkey varchar(30) NOT NULL, propvalue BOOLEAN NOT NULL)";
 		st.executeUpdate(query);
+		st.close();
+		con.close();
+		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
+		st = con.createStatement();
 		for(String prop : props)
 		{
 			String update = "INSERT INTO group_" + group + " VALUES ('" + prop + "', '" + def + "')";
@@ -395,16 +439,35 @@ public class FGMySQL
 		return ret;
 	}
 	
+	public static String getMemberGuild(String member) throws SQLException
+	{
+		String ret = "";
+		for(String guild : guilds)
+		{
+			con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
+			Statement st = con.createStatement();
+			String query = "SELECT ID FROM members WHERE name LIKE '" + member + "'";
+			ResultSet rs = st.executeQuery(query);
+			if(rs.next())
+			{
+				ret = guild;
+			}
+			st.close();
+			con.close();
+		}
+		return ret;
+	}
+	
 	public static boolean getProperty(String guild, String group, String property) throws SQLException
 	{
-		String query = "SELECT value FROM group_" + group + " WHERE key LIKE '" + property + "'";
+		String query = "SELECT propvalue FROM group_" + group + " WHERE propkey LIKE '" + property + "'";
 		boolean res = false;
 		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
 		Statement st = con.createStatement();
 		ResultSet rs = st.executeQuery(query);
 		if(rs.next())
 		{
-			res = rs.getBoolean("value");
+			res = rs.getBoolean("propvalue");
 		}
 		st.close();
 		con.close();
@@ -413,7 +476,7 @@ public class FGMySQL
 	
 	public static void setProperty(String guild, String group, String property, boolean value) throws SQLException
 	{
-		String query = "UPDATE group_" + group + " SET value='" + value + "' WHERE key LIKE '" + property + "'";
+		String query = "UPDATE group_" + group + " SET propvalue='" + value + "' WHERE propkey LIKE '" + property + "'";
 		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
 		Statement st = con.createStatement();
 		st.executeUpdate(query);

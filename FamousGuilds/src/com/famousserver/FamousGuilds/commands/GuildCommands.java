@@ -16,19 +16,42 @@ public class GuildCommands extends FamousCommand {
 	public GuildCommands()
 	{
 		super("guild", "", true, "NOHELP", "NOUSAGE", "g", "fg", "famousguild");
+		commands.add(new AddGuildCommand());
+		commands.add(new AddGroupCommand());
+		commands.add(new InviteCommand());
 	}
 	
 	public boolean exec(CommandSender sender, String[] args)
 	{
-		FamousCommand cmd;
-		if(args[0].equalsIgnoreCase("add"))
+		String name = args[0];
+		String[] realArgs = new String[args.length-1];
+		for(int i=0; i<realArgs.length; i++)
 		{
-			cmd = new AddGuildCommand();
-			return cmd.exec(sender, args);
+			realArgs[i] = args[i+1];
 		}
-		else
+		for(FamousCommand command : commands)
 		{
-			return false;
+			if(command.name.equalsIgnoreCase(name) || command.aliases.contains(name))
+			{
+				if(!(sender instanceof Player))
+				{
+					if(!command.isConsoleCommand)
+					{
+						sender.sendMessage(ChatColor.RED + "This is not a console command!");
+						return true;
+					}
+				}
+					
+				if(!sender.hasPermission(command.permission))
+				{
+					sender.sendMessage(ChatColor.RED + "You don't have permission to do that!");
+					return true;
+				}
+				
+				return command.exec(sender, realArgs);
+			}
 		}
+		sender.sendMessage(ChatColor.RED + "Command not found!");
+		return false;
 	}	
 }
