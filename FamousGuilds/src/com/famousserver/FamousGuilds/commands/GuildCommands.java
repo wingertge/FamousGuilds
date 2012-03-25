@@ -19,6 +19,7 @@ public class GuildCommands extends FamousCommand {
 		commands.add(new AddGuildCommand());
 		commands.add(new AddGroupCommand());
 		commands.add(new InviteCommand());
+		commands.add(new LeaveCommand());
 	}
 	
 	public boolean exec(CommandSender sender, String[] args)

@@ -224,7 +224,9 @@ public class FGMySQL
 		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
 		Statement st = con.createStatement();
 		String removemem = "DELETE FROM members WHERE name LIKE '" + member + "'"; 
+		String removememfromgroup = "DELETE FROM membergroups WHERE ID LIKE '" + getMemberID(guild, member) + "'";
 		st.executeUpdate(removemem);
+		st.executeUpdate(removememfromgroup);
 		st.close();
 		con.close();
 	}
