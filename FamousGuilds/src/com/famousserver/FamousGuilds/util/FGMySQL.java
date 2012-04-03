@@ -308,7 +308,25 @@ public class FGMySQL
 		assignGroup(guild.name, guild.leader, "Leader");
 		addProperties(guild.name, "Leader", true);
 		addProperties(guild.name, "Member", false);
+		addOptions(guild.name);
 		guilds.add(guild.name);
+	}
+	
+	private static void addOptions(String guild) throws SQLException
+	{
+		List<String> options = new ArrayList<String>();
+		options.add("banner");
+		options.add("status");
+		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
+		Statement st = con.createStatement();
+		String query = "CREATE TABLE IF NOT EXISTS options(optkey varchar(30) NOT NULL, optvalue varchar(100) NOT NULL)";
+		st.executeUpdate(query);
+		query = "INSERT INTO options VALUES ('banner', 'http://famousserver.de/banners/default.png')";
+		st.executeUpdate(query);
+		query = "INSERT INTO options VALUES ('status', 'private')";
+		st.executeUpdate(query);
+		st.close();
+		con.close();
 	}
 	
 	private static void addProperties(String guild, String group, boolean defa) throws SQLException
@@ -322,9 +340,9 @@ public class FGMySQL
 		props.add("kick");
 		props.add("invite");
 		props.add("managegroups");
-		props.add("changebanner");
 		props.add("managesiege");
 		props.add("accessguildbank");
+		props.add("changeoptions");
 		con = DriverManager.getConnection(url + "guild_" + guild, user, pw);
 		Statement st = con.createStatement();
 		String query = "CREATE TABLE IF NOT EXISTS group_" + group + "(propkey varchar(30) NOT NULL, propvalue BOOLEAN NOT NULL)";
